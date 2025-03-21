@@ -13,4 +13,4 @@ extern int maxProductions;
 void readCFGFromFile(const char *filename);
 void simplifyCFG();
 
-#endif // CFG_READER_H
+#endif 

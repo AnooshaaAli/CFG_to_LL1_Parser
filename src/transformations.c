@@ -87,38 +87,33 @@ void performLeftFactoring() {
 */
 
 void simplifyCFG() {
-    // Create a temporary array to store merged productions
     Production *newGrammar = (Production *)malloc(maxProductions * sizeof(Production));
     int newCount = 0;
 
-    // Track which non-terminals have already been merged
     int *merged = (int *)calloc(productionCount, sizeof(int));
 
     for (int i = 0; i < productionCount; i++) {
-        if (merged[i]) continue; // Skip already merged productions
+        if (merged[i]) continue; 
 
         char *lhs = grammar[i].lhs;
 
-        // Allocate a large enough buffer for the merged RHS
         char mergedRHS[1000] = "";  
         strcat(mergedRHS, grammar[i].rhs);  
 
         for (int j = i + 1; j < productionCount; j++) {
-            if (strcmp(lhs, grammar[j].lhs) == 0) { // Same LHS
+            if (strcmp(lhs, grammar[j].lhs) == 0) { 
                 strcat(mergedRHS, " | ");  
                 strcat(mergedRHS, grammar[j].rhs);
-                merged[j] = 1; // Mark this production as merged
+                merged[j] = 1; 
             }
         }
 
-        // Store the merged production
         strcpy(newGrammar[newCount].lhs, lhs);
         newGrammar[newCount].rhs = malloc(strlen(mergedRHS) + 1);
         strcpy(newGrammar[newCount].rhs, mergedRHS);
         newCount++;
     }
 
-    // Free old grammar and update with the new one
     free(grammar);
     grammar = newGrammar;
     productionCount = newCount;
