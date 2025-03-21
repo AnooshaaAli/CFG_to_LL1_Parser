@@ -1,0 +1,4 @@
+S -> a A B | a A C | b B C | b B D | d E
+A -> x y | x z | x w
+B -> p q r | p q s | p r t
+C -> m n | m o | m p
