@@ -447,6 +447,5 @@ void eliminatetLeftRecursion() {
                 grammar[i].rhs = strdup(newRhs);
             }
         }
-        removeDirectLeftRecursion();
     }
 }

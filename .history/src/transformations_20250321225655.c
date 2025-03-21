@@ -284,6 +284,82 @@ void performLeftFactoring() {
     simplifyCFG();
 }
 
+void eliminatetLeftRecursion() {
+    for (int i = 0; i < productionCount; i++) {
+        for (int j = 0; j < i; j++) {
+            char *lhs_i = grammar[i].lhs;
+            char *lhs_j = grammar[j].lhs;
+            char *rhs_i = grammar[i].rhs;
+
+            char *tokens[100];
+            int tokenCount = 0;
+
+            char *rhsCopy = strdup(rhs_i);
+            char *token = strtok(rhsCopy, "|");
+
+            while (token != NULL) {
+                while (*token == ' ') token++;  
+                char *end = token + strlen(token) - 1;
+                while (end > token && *end == ' ') {
+                    *end = '\0';
+                    end--;
+                }
+
+                tokens[tokenCount] = strdup(token);
+                tokenCount++;
+                token = strtok(NULL, "|");
+            }
+
+            free(rhsCopy);
+
+            int changed = 0;
+            char newRhs[500] = "";
+
+            for (int k = 0; k < tokenCount; k++) {
+                if (strncmp(tokens[k], lhs_j, strlen(lhs_j)) == 0) {
+                    changed = 1;
+                    char *remaining = tokens[k] + strlen(lhs_j);
+
+                    char *substitutions[100];
+                    int subCount = 0;
+                    char *rhs_j_copy = strdup(grammar[j].rhs);
+                    char *subToken = strtok(rhs_j_copy, "|");
+
+                    while (subToken != NULL) {
+                        while (*subToken == ' ') subToken++;  
+                        char *end = subToken + strlen(subToken) - 1;
+                        while (end > subToken && *end == ' ') {
+                            *end = '\0';
+                            end--;
+                        }
+                        substitutions[subCount] = strdup(subToken);
+                        subCount++;
+                        subToken = strtok(NULL, "|");
+                    }
+
+                    free(rhs_j_copy);
+
+                    for (int s = 0; s < subCount; s++) {
+                        strcat(newRhs, substitutions[s]);
+                        strcat(newRhs, remaining);
+                        strcat(newRhs, " | ");
+                        free(substitutions[s]);
+                    }
+                } else {
+                    strcat(newRhs, tokens[k]);
+                    strcat(newRhs, " | ");
+                }
+                free(tokens[k]);
+            }
+
+            if (changed) {
+                newRhs[strlen(newRhs) - 3] = '\0'; 
+                grammar[i].rhs = strdup(newRhs);
+            }
+        }
+    }
+}
+
 void removeDirectLeftRecursion() {
     simplifyCFG();
     int newNonTerminalCount = 0; 
@@ -372,81 +448,5 @@ void removeDirectLeftRecursion() {
             free(tokens[j]);
         }
     }
-}
-
-void eliminatetLeftRecursion() {
-    for (int i = 0; i < productionCount; i++) {
-        for (int j = 0; j < i; j++) {
-            char *lhs_i = grammar[i].lhs;
-            char *lhs_j = grammar[j].lhs;
-            char *rhs_i = grammar[i].rhs;
-
-            char *tokens[100];
-            int tokenCount = 0;
-
-            char *rhsCopy = strdup(rhs_i);
-            char *token = strtok(rhsCopy, "|");
-
-            while (token != NULL) {
-                while (*token == ' ') token++;  
-                char *end = token + strlen(token) - 1;
-                while (end > token && *end == ' ') {
-                    *end = '\0';
-                    end--;
-                }
-
-                tokens[tokenCount] = strdup(token);
-                tokenCount++;
-                token = strtok(NULL, "|");
-            }
-
-            free(rhsCopy);
-
-            int changed = 0;
-            char newRhs[500] = "";
-
-            for (int k = 0; k < tokenCount; k++) {
-                if (strncmp(tokens[k], lhs_j, strlen(lhs_j)) == 0) {
-                    changed = 1;
-                    char *remaining = tokens[k] + strlen(lhs_j);
-
-                    char *substitutions[100];
-                    int subCount = 0;
-                    char *rhs_j_copy = strdup(grammar[j].rhs);
-                    char *subToken = strtok(rhs_j_copy, "|");
-
-                    while (subToken != NULL) {
-                        while (*subToken == ' ') subToken++;  
-                        char *end = subToken + strlen(subToken) - 1;
-                        while (end > subToken && *end == ' ') {
-                            *end = '\0';
-                            end--;
-                        }
-                        substitutions[subCount] = strdup(subToken);
-                        subCount++;
-                        subToken = strtok(NULL, "|");
-                    }
-
-                    free(rhs_j_copy);
-
-                    for (int s = 0; s < subCount; s++) {
-                        strcat(newRhs, substitutions[s]);
-                        strcat(newRhs, remaining);
-                        strcat(newRhs, " | ");
-                        free(substitutions[s]);
-                    }
-                } else {
-                    strcat(newRhs, tokens[k]);
-                    strcat(newRhs, " | ");
-                }
-                free(tokens[k]);
-            }
-
-            if (changed) {
-                newRhs[strlen(newRhs) - 3] = '\0'; 
-                grammar[i].rhs = strdup(newRhs);
-            }
-        }
-        removeDirectLeftRecursion();
-    }
+    e
 }

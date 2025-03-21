@@ -284,96 +284,6 @@ void performLeftFactoring() {
     simplifyCFG();
 }
 
-void removeDirectLeftRecursion() {
-    simplifyCFG();
-    int newNonTerminalCount = 0; 
-
-    for (int i = 0; i < productionCount; i++) {
-        char *lhs = grammar[i].lhs;
-        char *rhs = grammar[i].rhs;
-
-        char *tokens[100];
-        int tokenCount = 0;
-
-        char *rhsCopy = strdup(rhs);
-        char *token = strtok(rhsCopy, "|");
-
-        while (token != NULL) {
-            while (*token == ' ') token++;
-            char *end = token + strlen(token) - 1;
-            while (end > token && *end == ' ') {
-                *end = '\0';
-                end--;
-            }
-
-            tokens[tokenCount] = strdup(token);
-            tokenCount++;
-            token = strtok(NULL, "|");
-        }
-
-        free(rhsCopy);
-
-        int hasLeftRecursion = 0;
-        char *nonRecursive[100];
-        char *recursive[100];
-        int nonRecCount = 0, recCount = 0;
-
-        // separate left-recursive and non-recursive rules
-        for (int j = 0; j < tokenCount; j++) {
-            if (strncmp(tokens[j], lhs, strlen(lhs)) == 0) {
-                hasLeftRecursion = 1;
-                recursive[recCount++] = tokens[j] + strlen(lhs); 
-            } else {
-                nonRecursive[nonRecCount++] = tokens[j];
-            }
-        }
-
-        if (hasLeftRecursion) {
-            char newLHS[10];
-            snprintf(newLHS, sizeof(newLHS), "%s'", lhs);
-
-            char *newRhs = malloc(100);
-            newRhs[0] = '\0';
-
-            if (nonRecCount == 0) {
-                // case where no β exists (A -> Aα only)
-                strcat(newRhs, newLHS);
-            } else {
-                for (int j = 0; j < nonRecCount; j++) {
-                    strcat(newRhs, nonRecursive[j]);
-                    strcat(newRhs, " ");
-                    strcat(newRhs, newLHS);
-                    if (j < nonRecCount - 1) strcat(newRhs, " | ");
-                }
-            }
-
-            grammar[i].rhs = newRhs;
-
-            Production newProduction;
-            strcpy(newProduction.lhs, newLHS);
-            newProduction.rhs = malloc(100);
-            newProduction.rhs[0] = '\0';
-
-            for (int j = 0; j < recCount; j++) {
-                strcat(newProduction.rhs, recursive[j]);
-                strcat(newProduction.rhs, " ");
-                strcat(newProduction.rhs, newLHS);
-                if (j < recCount - 1) strcat(newProduction.rhs, " | ");
-            }
-
-            if (nonRecCount) {
-                strcat(newProduction.rhs, " | ε");
-            }
-
-            grammar[productionCount++] = newProduction;
-        }
-
-        for (int j = 0; j < tokenCount; j++) {
-            free(tokens[j]);
-        }
-    }
-}
-
 void eliminatetLeftRecursion() {
     for (int i = 0; i < productionCount; i++) {
         for (int j = 0; j < i; j++) {
@@ -447,6 +357,5 @@ void eliminatetLeftRecursion() {
                 grammar[i].rhs = strdup(newRhs);
             }
         }
-        removeDirectLeftRecursion();
     }
 }

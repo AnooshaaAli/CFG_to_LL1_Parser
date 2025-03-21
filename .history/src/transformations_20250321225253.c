@@ -205,7 +205,7 @@ void groupProductions() {
 
 void performLeftFactoring() {
     simplifyCFG();
-    groupProductions();
+    splitProductions();
     //printGrammer();
 
     int newNonTerminalCount = 0; 
@@ -447,6 +447,6 @@ void eliminatetLeftRecursion() {
                 grammar[i].rhs = strdup(newRhs);
             }
         }
-        removeDirectLeftRecursion();
     }
+    removeDirectLeftRecursion(); 
 }
