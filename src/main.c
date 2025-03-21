@@ -6,7 +6,7 @@
 
 // main code
 int main() {
-    char* filename = "../input/cfg.txt";
+    char* filename = "../input/left_recur_test.txt";
 
     printf("\nInitial CFG: \n");
     readCfGfromFile(filename);
@@ -20,6 +20,7 @@ int main() {
     eliminatetLeftRecursion();
     printGrammer();
 
+    printf("\n");
     free_memory();
     
     return 0;
