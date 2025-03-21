@@ -1,0 +1,3 @@
+S -> A b | c
+A -> A d | B e | f
+B -> S g | h
