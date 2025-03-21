@@ -6,7 +6,7 @@
 
 // main code
 int main() {
-    char* filename = "../input/left_factor_test.txt";
+    char* filename = "../input/cfg.txt";
 
     printf("\nInitial CFG: \n");
     readCfGfromFile(filename);
@@ -14,6 +14,10 @@ int main() {
 
     printf("\nCFG after left factoring: \n");
     performLeftFactoring();
+    printGrammer();
+
+    printf("\nCFG after remvoving left recusrsion: \n");
+    eliminatetLeftRecursion();
     printGrammer();
 
     free_memory();
