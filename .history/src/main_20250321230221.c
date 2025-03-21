@@ -18,7 +18,7 @@ int main() {
 
     printf("\nCFG after remvoving left recusrsion: \n");
     removeDirectLeftRecursion(); 
-    removeIndirectLeftRecursion();
+    removetLeftRecursion();
     printGrammer();
 
     printf("\n");
