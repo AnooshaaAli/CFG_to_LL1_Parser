@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "cfg_reader.c"
-#include "transformations.c"
+#include "LL1_parsing.c"
+#include "parse_table.c"
 
 // main code
 int main() {
@@ -20,6 +20,11 @@ int main() {
     removeDirectLeftRecursion(); 
     removeIndirectLeftRecursion();
     printGrammer();
+
+    int newProductionCount;
+    Production* correctedGrammar = correctProductionFormat(grammar, productionCount, &newProductionCount);
+
+    generateAndPrintLL1Table(correctedGrammar, newProductionCount);
 
     printf("\n");
     free_memory();
