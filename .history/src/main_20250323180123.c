@@ -6,7 +6,7 @@
 
 // main code
 int main() {
-    char* filename = "../input/left_recur_test_2.txt";
+    char* f_2
 
     printf("\nInitial CFG: \n");
     readCfGfromFile(filename);

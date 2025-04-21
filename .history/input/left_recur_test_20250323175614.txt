@@ -1,0 +1,5 @@
+Stmt -> Stmt ; Assign | Assign  
+Assign -> id = Expr  
+Expr -> Expr + Term | Term  
+Term -> Term * Factor | Factor  
+Factor -> ( Expr ) | id
