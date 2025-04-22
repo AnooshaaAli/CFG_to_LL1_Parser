@@ -1,19 +1,9 @@
-// Structure to represent the LL(1) parsing table
-typedef struct {
-    char nonTerminal[MAX_SYMBOL_LEN];
-    char terminal[MAX_SYMBOL_LEN];
-    Production production;
-    bool isError;
-} ParseTableEntry;
-
-typedef struct {
-    ParseTableEntry entries[MAX_SYMBOLS * MAX_SYMBOLS];
-    int count;
-    char terminals[MAX_SYMBOLS][MAX_SYMBOL_LEN];
-    int terminalCount;
-    char nonTerminals[MAX_SYMBOLS][MAX_SYMBOL_LEN];
-    int nonTerminalCount;
-} ParseTable;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include "parse_table.h"
 
 // Check if terminal exists in first set of a non-terminal
 bool isInFirstSet(const char* nonTerminal, const char* terminal) {

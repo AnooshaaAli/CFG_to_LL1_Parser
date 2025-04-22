@@ -6,11 +6,13 @@ typedef struct {
     char *rhs;
 } Production;
 
-extern Production *grammar;  
+extern Production *grammar;
 extern int productionCount;
 extern int maxProductions;
 
 void readCFGFromFile(const char *filename);
-void simplifyCFG();
+void printGrammer(void);
+void free_memory(void);
+void simplifyCFG(void);
 
-#endif 
+#endif // CFG_READER_H

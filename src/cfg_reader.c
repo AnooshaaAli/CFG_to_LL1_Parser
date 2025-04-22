@@ -1,15 +1,15 @@
 #include <stdio.h>
-#include <stdlib.h>  // Add this to define NULL
+#include <stdlib.h>
 #include <string.h>
 #include "cfg_reader.h"
 
+// Define global variables
 Production *grammar = NULL;
 int productionCount = 0;
 int maxProductions = 100;
 
 // reads cfg from file
-void readCfGfromFile(const char* filename) {
-
+void readCFGFromFile(const char* filename) {
     FILE *file = fopen(filename, "r");
 
     if (!file) {
@@ -24,19 +24,18 @@ void readCfGfromFile(const char* filename) {
     ssize_t read;
 
     while ((read = getline(&line, &len, file)) != -1) {
-
         // skips empty lines
         if (read <= 1) {
             continue;
         }
 
-        // incrreases production count
+        // increases production count
         if (productionCount >= maxProductions) {
             maxProductions *= 2;
             grammar = (Production*)realloc(grammar, maxProductions * sizeof(Production));
         }
 
-        char *lineCopy = malloc(strlen(line));
+        char *lineCopy = malloc(strlen(line) + 1); // +1 for null terminator
         strcpy(lineCopy, line);
 
         char *lhsToken = strtok(lineCopy, " ->");
@@ -50,6 +49,7 @@ void readCfGfromFile(const char* filename) {
 
         if (rhsStart >= line + read) {
             printf("Error: Invalid RHS in production: %s\n", line);
+            free(lineCopy);
             continue;
         }
 
@@ -66,11 +66,13 @@ void readCfGfromFile(const char* filename) {
         strcpy(grammar[productionCount].rhs, rhsStart);
         grammar[productionCount].rhs[strcspn(grammar[productionCount].rhs, "\n")] = '\0';
         productionCount++;
+        free(lineCopy);
     }
+    free(line);
     fclose(file);
 }
 
-// print the grammer
+// print the grammar
 void printGrammer() {
     for (int i = 0; i < productionCount; i++) {
         printf("%s -> %s\n", grammar[i].lhs, grammar[i].rhs);
@@ -83,4 +85,6 @@ void free_memory() {
         free(grammar[i].rhs);
     }
     free(grammar);
+    grammar = NULL;
+    productionCount = 0;
 }

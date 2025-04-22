@@ -1,10 +1,11 @@
+#ifndef LL1_PARSER_H
+#define LL1_PARSER_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include "cfg_reader.c"
-#include "transformations.c"
 #include "cfg_reader.h"
 
 #define MAX_SYMBOL_LEN 20
@@ -23,15 +24,13 @@ typedef struct {
     int count;
 } SymbolSet;
 
-// Global variables to store first and follow sets
-SymbolSet firstSets[MAX_SYMBOLS];
-SymbolSet followSets[MAX_SYMBOLS];
-int numFirstSets = 0;
-int numFollowSets = 0;
-
-// Global array to store all symbols in the grammar
-char allSymbols[MAX_SYMBOLS][MAX_SYMBOL_LEN];
-int numSymbols = 0;
+// Global variables (declared as extern)
+extern SymbolSet firstSets[MAX_SYMBOLS];
+extern SymbolSet followSets[MAX_SYMBOLS];
+extern int numFirstSets;
+extern int numFollowSets;
+extern char allSymbols[MAX_SYMBOLS][MAX_SYMBOL_LEN];
+extern int numSymbols;
 
 // Function declarations
 void extractSymbols(Production prods[], int numProds);
@@ -53,3 +52,5 @@ void parseRHS(const char* rhs, char symbols[][MAX_SYMBOL_LEN], int* count);
 void printCFG(Production prods[], int numProds);
 Production* correctProductionFormat(Production* prods, int inputCount, int* outputCount);
 void freeProductions(Production* prods, int count);
+
+#endif // LL1_PARSER_H

@@ -5,6 +5,14 @@
 #include <stdbool.h>
 #include "LL1_parser.h"
 
+// Define global variables
+SymbolSet firstSets[MAX_SYMBOLS];
+SymbolSet followSets[MAX_SYMBOLS];
+int numFirstSets = 0;
+int numFollowSets = 0;
+char allSymbols[MAX_SYMBOLS][MAX_SYMBOL_LEN];
+int numSymbols = 0;
+
 void printProductionsAsArray(Production *prods, int count) {
     printf("Production prods[] = {\n");
     
@@ -364,6 +372,7 @@ void copyFollowSetToFollowSet(const char* sourceSymbol, const char* targetSymbol
     }
 }
 
+/**
 // Compute first sets for all symbols in the grammar
 void computeFirstSets(Production prods[], int numProds) {
     // Initialize first sets for all symbols
@@ -431,6 +440,98 @@ void computeFirstSets(Production prods[], int numProds) {
                     } else {
                         allCanDeriveEpsilon = false;
                     }
+                }
+            }
+            
+            // If all symbols in RHS can derive epsilon, add epsilon to First(X)
+            if (allCanDeriveEpsilon && rhsSymbolCount > 0) {
+                int beforeCount = firstSets[getFirstSetIndex(lhs)].count;
+                addToFirstSet(lhs, "ε");
+                if (beforeCount != firstSets[getFirstSetIndex(lhs)].count) {
+                    changed = true;
+                }
+            }
+        }
+    } while (changed);
+}
+**/
+
+void computeFirstSets(Production prods[], int numProds) {
+    // Initialize first sets for all symbols
+    for (int i = 0; i < numSymbols; i++) {
+        initializeFirstSet(allSymbols[i]);
+        
+        // If symbol is a terminal, add it to its own first set
+        if (isTerminal(allSymbols[i])) {
+            addToFirstSet(allSymbols[i], allSymbols[i]);
+        }
+    }
+    
+    bool changed;
+    do {
+        changed = false;
+        
+        for (int i = 0; i < numProds; i++) {
+            const char* lhs = prods[i].lhs;
+            const char* rhs = prods[i].rhs;
+            
+            // Ensure LHS has a first set
+            initializeFirstSet(lhs);
+            
+            // If production is of the form X -> ε
+            if (strcmp(rhs, "ε") == 0) {
+                int beforeCount = firstSets[getFirstSetIndex(lhs)].count;
+                addToFirstSet(lhs, "ε");
+                if (beforeCount != firstSets[getFirstSetIndex(lhs)].count) {
+                    changed = true;
+                }
+                continue;
+            }
+            
+            // Parse RHS into individual symbols
+            char rhsSymbols[MAX_SYMBOLS][MAX_SYMBOL_LEN];
+            int rhsSymbolCount = 0;
+            parseRHS(rhs, rhsSymbols, &rhsSymbolCount);
+            
+            // For productions X -> Y1 Y2 ... Yn
+            bool allCanDeriveEpsilon = true;
+            for (int j = 0; j < rhsSymbolCount && allCanDeriveEpsilon; j++) {
+                const char* currentSymbol = rhsSymbols[j];
+                
+                // Ensure the current symbol has a first set
+                initializeFirstSet(currentSymbol);
+                
+                if (isTerminal(currentSymbol)) {
+                    int beforeCount = firstSets[getFirstSetIndex(lhs)].count;
+                    addToFirstSet(lhs, currentSymbol);
+                    if (beforeCount != firstSets[getFirstSetIndex(lhs)].count) {
+                        changed = true;
+                    }
+                    allCanDeriveEpsilon = false;
+                } else if (isNonTerminal(currentSymbol)) {
+                    int firstSetIndex = getFirstSetIndex(currentSymbol);
+                    if (firstSetIndex != -1) {
+                        int beforeCount = firstSets[getFirstSetIndex(lhs)].count;
+                        
+                        // Add all terminals except epsilon from First(Y) to First(X)
+                        for (int k = 0; k < firstSets[firstSetIndex].count; k++) {
+                            const char* terminal = firstSets[firstSetIndex].elements[k].symbol;
+                            if (strcmp(terminal, "ε") != 0) {
+                                addToFirstSet(lhs, terminal);
+                            }
+                        }
+                        
+                        if (beforeCount != firstSets[getFirstSetIndex(lhs)].count) {
+                            changed = true;
+                        }
+                        
+                        // Check if Y can derive epsilon
+                        allCanDeriveEpsilon = hasEpsilonInFirstSet(currentSymbol);
+                    } else {
+                        allCanDeriveEpsilon = false;
+                    }
+                } else {
+                    allCanDeriveEpsilon = false;
                 }
             }
             

@@ -285,7 +285,6 @@ void performLeftFactoring() {
 }
 
 void removeDirectLeftRecursion() {
-    simplifyCFG();
     int newNonTerminalCount = 0; 
 
     for (int i = 0; i < productionCount; i++) {
@@ -318,11 +317,11 @@ void removeDirectLeftRecursion() {
         char *recursive[100];
         int nonRecCount = 0, recCount = 0;
 
-        // separate left-recursive and non-recursive rules
+        // Separate left-recursive and non-recursive rules
         for (int j = 0; j < tokenCount; j++) {
-            if (strncmp(tokens[j], lhs, strlen(lhs)) == 0) {
+            if (strncmp(tokens[j], lhs, strlen(lhs)) == 0 && tokens[j][strlen(lhs)] == ' ') {
                 hasLeftRecursion = 1;
-                recursive[recCount++] = tokens[j] + strlen(lhs); 
+                recursive[recCount++] = tokens[j] + strlen(lhs) + 1; // Skip LHS and space
             } else {
                 nonRecursive[nonRecCount++] = tokens[j];
             }
@@ -332,23 +331,33 @@ void removeDirectLeftRecursion() {
             char newLHS[10];
             snprintf(newLHS, sizeof(newLHS), "%s'", lhs);
 
+            // Update current production: A -> β A'
             char *newRhs = malloc(100);
             newRhs[0] = '\0';
-
             if (nonRecCount == 0) {
-                // case where no β exists (A -> Aα only)
+                // Case where no β exists (A -> Aα only)
                 strcat(newRhs, newLHS);
             } else {
                 for (int j = 0; j < nonRecCount; j++) {
+                    printf("After init: '%s'\n", newRhs);           // Should be ""
                     strcat(newRhs, nonRecursive[j]);
+                    printf("After T: '%s'\n", newRhs);             // Should be "T"
                     strcat(newRhs, " ");
+                    printf("After space: '%s'\n", newRhs);         // Should be "T "
                     strcat(newRhs, newLHS);
-                    if (j < nonRecCount - 1) strcat(newRhs, " | ");
+                    printf("After E': '%s'\n", newRhs);
                 }
             }
 
+            printf("Check 3: \n");
+            printGrammer();
+            // Free old RHS and update
+            free(grammar[i].rhs);
             grammar[i].rhs = newRhs;
+            printf("Check 4: \n");
+            printGrammer();
 
+            // Create new production: A' -> α A' | ε
             Production newProduction;
             strcpy(newProduction.lhs, newLHS);
             newProduction.rhs = malloc(100);
@@ -361,17 +370,28 @@ void removeDirectLeftRecursion() {
                 if (j < recCount - 1) strcat(newProduction.rhs, " | ");
             }
 
-            if (nonRecCount) {
+            if (nonRecCount > 0) {
+                strcat(newProduction.rhs, " | ε");
+            } else if (recCount > 0) {
                 strcat(newProduction.rhs, " | ε");
             }
 
-            grammar[productionCount++] = newProduction;
+            // Add new production
+            if (productionCount >= maxProductions) {
+                maxProductions *= 2;
+                grammar = (Production*)realloc(grammar, maxProductions * sizeof(Production));
+            }
+            grammar[productionCount] = newProduction;
+            productionCount++;
         }
 
         for (int j = 0; j < tokenCount; j++) {
             free(tokens[j]);
         }
     }
+
+    // Call simplifyCFG only after all transformations
+    simplifyCFG();
 }
 
 void removeIndirectLeftRecursion() {
