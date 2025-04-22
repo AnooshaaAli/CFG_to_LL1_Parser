@@ -124,19 +124,21 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
     printf("----------------------------------------------------------------\n");
 
     while (stack.top >= 0 && !error) {
+
+        // Print current state
+        printf("%s", "");
+        printStack(&stack);
+        printf(" %-15s", "");
+        printf(" %-25s", tokens[inputIndex]);
+
         char stackTop[MAX_SYMBOL_LEN];
         if (!pop(&stack, stackTop)) {
             error = true;
             break;
         }
 
-        // Print current state
-        printf("%-20s", "");
-        printStack(&stack);
-        printf(" %-15s", tokens[inputIndex]);
-
         // Case 1: Stack top is a terminal
-        if (isTerminal(stackTop)) {
+        if (isTerminal(stackTop) && strcmp(stackTop, "$") != 0) {
             if (strcmp(stackTop, tokens[inputIndex]) == 0) {
                 printf("%-30s\n", "Match and advance");
                 inputIndex++;
@@ -208,6 +210,7 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
 void parseStringFromFile(ParseTable* table, const char* filename, const char* startSymbol) {
     char input[MAX_INPUT_LENGTH];
     if (readInputString(filename, input, MAX_INPUT_LENGTH)) {
+        printf("\nStart Symbol: %s\n", startSymbol);
         printf("\nInput string: %s\n", input);
         parseString(table, input, startSymbol);
     }
