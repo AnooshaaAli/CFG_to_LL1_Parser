@@ -1,0 +1,23 @@
+Program       -> FunctionList Code
+FunctionList  -> Function FunctionList | ε
+Function      -> Type id ( Params ) { StmtList }
+Code          -> StmtList
+Params        -> Param ParamsTail | ε
+ParamsTail    -> , Param ParamsTail | ε
+Param         -> Type id
+StmtList      -> Stmt StmtList | ε
+Stmt          -> VarDecl ; Stmt | ExprStmt ; Stmt | ReturnStmt ; Stmt | IfStmt ; Stmt | ε
+VarDecl       -> Type id
+ExprStmt      -> Expr
+ReturnStmt    -> return Expr
+IfStmt        -> if ( Expr ) { StmtList } else { StmtList }
+Expr          -> Assignment
+Assignment    -> LogicExpr AssignmentTail
+AssignmentTail -> = Assignment | ε
+LogicExpr     -> AddExpr
+AddExpr       -> MulExpr AddExpr'
+AddExpr'      -> + MulExpr AddExpr' | - MulExpr AddExpr' | ε
+MulExpr       -> Factor MulExpr'
+MulExpr'      -> * Factor MulExpr' | / Factor MulExpr' | ε
+Factor        -> id | num | ( Expr )
+Type          -> int | float | char | bool

@@ -1,0 +1,21 @@
+Program       -> Function Code
+Function      -> Type id ( Params ) { Stmt } | ε
+Code          -> int main ( ) { Stmt }
+Params        -> Param ParamsTail | ε
+ParamsTail    -> , Param ParamsTail | ε
+Param         -> Type id
+Stmt          -> VarDecl ; Stmt | ExprStmt ; Stmt | ReturnStmt ; | IfStmt ; Stmt | ε
+VarDecl       -> Type id
+ExprStmt      -> Expr
+ReturnStmt    -> return Expr
+IfStmt        -> if ( Expr ) { Stmt } else { Stmt }
+Expr          -> Assignment
+Assignment    -> LogicExpr AssignmentTail
+AssignmentTail -> = Assignment | ε
+LogicExpr     -> AddExpr                       
+AddExpr       -> MulExpr AddExpr'
+AddExpr'      -> + MulExpr AddExpr' | - MulExpr AddExpr' | ε
+MulExpr       -> Factor MulExpr'
+MulExpr'      -> * Factor MulExpr' | / Factor MulExpr' | ε
+Factor        -> id | num | ( Expr )
+Type          -> int | float | char | bool

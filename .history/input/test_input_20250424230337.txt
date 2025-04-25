@@ -1,0 +1,3 @@
+statement -> assignstmt | callstmt | other
+assignstmt -> identifier := exp
+callstmt -> identifier ( exp-list )

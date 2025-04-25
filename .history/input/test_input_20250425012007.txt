@@ -1,0 +1,11 @@
+Program -> Function
+Function -> Type id ( Params ) { Stmt }
+Params -> Param | , Param | ε
+Param -> Type id Params
+Stmts - > Stmt 
+Stmt -> VarDecl ; Stmt | ExprStmt ; Stmt | ReturnStmt ;
+VarDecl -> Type id
+ExprStmt -> Expr
+Expr -> id = Expr | num | id | Expr + Expr | Expr - Expr | Expr * Expr | Expr / Expr
+ReturnStmt -> return Expr ;
+Type -> int | float | char
