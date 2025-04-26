@@ -308,11 +308,11 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
                         //         firstSetStr, tokens[inputIndex]);
 
                         snprintf(errorMsg, sizeof(errorMsg),
-                                "Syntax Error: Unexpected Token %s after %s",
+                                "Syntax Error: Unexpected Token [%s] after %s",
                                 tokens[inputIndex], tokens[inputIndex - 1]);
                     } else {
                         snprintf(errorMsg, sizeof(errorMsg),
-                                "Syntax Error: Unexpected Token %s after %s",
+                                "Syntax Error: Unexpected Token [%s] after %s",
                                 tokens[inputIndex], tokens[inputIndex - 1]);
                     }
 

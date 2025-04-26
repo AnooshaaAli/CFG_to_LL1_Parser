@@ -1,0 +1,3 @@
+float calculate ( int x , ) { 
+    return x ; 
+}

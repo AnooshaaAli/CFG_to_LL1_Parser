@@ -64,45 +64,6 @@ void printStack(ParseStack* stack) {
     printf("]");
 }
 
-bool readInputString(const char* filename, char* input, int maxLength) {
-    FILE* file = fopen(filename, "r");
-    if (!file) {
-        printf("Error: Could not open input file %s\n", filename);
-        return false;
-    }
-
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-    input[0] = '\0';
-
-    while ((read = getline(&line, &len, file)) != -1) {
-        // Remove newline
-        line[strcspn(line, "\n")] = '\0';
-        // Trim leading/trailing spaces
-        char* start = line;
-        while (*start == ' ') start++;
-        char* end = start + strlen(start) - 1;
-        while (end > start && *end == ' ') *end-- = '\0';
-        
-        if (strlen(start) > 0) {
-            if (strlen(input) + strlen(start) + 1 < maxLength) {
-                if (input[0] != '\0') strcat(input, " ");
-                strcat(input, start);
-            } else {
-                printf("Error: Input string too long\n");
-                free(line);
-                fclose(file);
-                return false;
-            }
-        }
-    }
-
-    free(line);
-    fclose(file);
-    return true;
-}
-
 int tokenizeInputFromFile(const char* filename, char* tokens[], int tokenLines[]) {
     FILE* file = fopen(filename, "r");
     if (!file) {
@@ -136,6 +97,7 @@ int tokenizeInputFromFile(const char* filename, char* tokens[], int tokenLines[]
         lineNumber++;
     }
 
+    // Add end marker
     tokens[tokenCount] = strdup("$");
     tokenLines[tokenCount] = lineNumber;
     tokenCount++;
@@ -186,13 +148,19 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
     push(&stack, "$");
     push(&stack, startSymbol);
 
+    // Tokenize input string
+    char inputCopy[MAX_INPUT_LENGTH];
+    strcpy(inputCopy, input);
     char* tokens[MAX_SYMBOLS];
-    int tokenCount = tokenizeInputFromFile(input, tokens, tokenLines);
+    int tokenCount = 0;
 
-    if (tokenCount == -1) {
-        printf("Error in tokenizing input.\n");
-        return;
+    char* token = strtok(inputCopy, " ");
+    while (token != NULL) {
+        tokens[tokenCount++] = token;
+        token = strtok(NULL, " ");
     }
+    tokens[tokenCount] = "$"; // Add end marker
+    tokenCount++;
 
     int inputIndex = 0;
     bool error = false;
@@ -229,10 +197,10 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
                 if (strcmp(new_error_input, last_error_input) != 0) {
                     strcpy(last_error_input, new_error_input);
                     char errorMsg[100];
-                    snprintf(errorMsg, sizeof(errorMsg), "Syntax Error: Expected %s before %s", stackTop, tokens[inputIndex]);
-                    addError(tokenLines[inputIndex], errorMsg);
+                    snprintf(errorMsg, sizeof(errorMsg), "Error: Terminal mismatch. Expected %s, found %s", stackTop, tokens[inputIndex]);
+                    addError(inputIndex + 1, errorMsg); 
                 }
-                printf("%-30s\n", "Syntax Error: Terminal mismatch");
+                printf("%-30s\n", "Error: Terminal mismatch");
             }
         }
 
@@ -302,45 +270,36 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
                             }
                         }
 
-                        // if you wanna print expected tokens
-                        // snprintf(errorMsg, sizeof(errorMsg),
-                        //         "Syntax Error: Expected one of [%s], but encountered %s",
-                        //         firstSetStr, tokens[inputIndex]);
-
                         snprintf(errorMsg, sizeof(errorMsg),
-                                "Syntax Error: Unexpected Token %s after %s",
-                                tokens[inputIndex], tokens[inputIndex - 1]);
+                                "Error: Expected one of [%s], but encountered [%s]",
+                                firstSetStr, tokens[inputIndex]);
                     } else {
                         snprintf(errorMsg, sizeof(errorMsg),
-                                "Syntax Error: Unexpected Token %s after %s",
-                                tokens[inputIndex], tokens[inputIndex - 1]);
+                                "Error: Expected token [%s], but encountered [%s]",
+                                stackTop, tokens[inputIndex]);
                     }
 
                     if (add) {
-                        addError(tokenLines[inputIndex], errorMsg);
+                        addError(inputIndex + 1, errorMsg);
                     }
                 }
                 printf("%-30s\n", "No table entry");
             }
         }
         // Case 3: Stack top is $
-        else if (strcmp(stackTop, "$") == 0 && strcmp(tokens[inputIndex], "$") == 0 && errorCount == 0) {
+        else if (strcmp(stackTop, "$") == 0 && strcmp(tokens[inputIndex], "$") == 0) {
             printf("%-30s\n", "Accept");
             break;
         }
-        else if (errorCount == 0) {
+        else {
             strcpy(new_error_input, tokens[inputIndex]);
             if (strcmp(new_error_input, last_error_input) != 0) {
                 strcpy(last_error_input, new_error_input);
                 char errorMsg[100];
-                snprintf(errorMsg, sizeof(errorMsg), "Syntax Error: Invalid stack symbol %s", stackTop);
-                addError(tokenLines[inputIndex], errorMsg);
+                snprintf(errorMsg, sizeof(errorMsg), "Error: Invalid stack symbol %s", stackTop);
+                addError(inputIndex + 1, errorMsg); 
             }
-            printf("%-30s\n", "Syntax Error: Invalid stack symbol");
-        }
-        else {
-            printf("%-30s\n", "Reject");
-            break;
+            printf("%-30s\n", "Error: Invalid stack symbol");
         }
     }
 
@@ -357,10 +316,6 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
             printf("Line %d: %s\n", syntaxErrors[i].line_num, syntaxErrors[i].error);
         }
     }
-
-    for (int i = 0; i < tokenCount; i++) {
-        free(tokens[i]);
-    }
 }
 
 // Main function to parse a string from a file
@@ -369,6 +324,6 @@ void parseStringFromFile(ParseTable* table, const char* filename, const char* st
     if (readInputString(filename, input, MAX_INPUT_LENGTH)) {
         printf("\nStart Symbol: %s\n", startSymbol);
         printf("\nInput string: %s\n", input);
-        parseString(table, filename, startSymbol);
+        parseString(table, input, startSymbol);
     }
 }

@@ -302,11 +302,6 @@ void parseString(ParseTable* table, const char* input, const char* startSymbol) 
                             }
                         }
 
-                        // if you wanna print expected tokens
-                        // snprintf(errorMsg, sizeof(errorMsg),
-                        //         "Syntax Error: Expected one of [%s], but encountered %s",
-                        //         firstSetStr, tokens[inputIndex]);
-
                         snprintf(errorMsg, sizeof(errorMsg),
                                 "Syntax Error: Unexpected Token %s after %s",
                                 tokens[inputIndex], tokens[inputIndex - 1]);
